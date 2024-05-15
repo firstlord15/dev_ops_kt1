@@ -1,0 +1,20 @@
+---
+- name: Manage services
+  hosts: APACHE
+  become: yes
+
+  tasks:
+    - name: Start service
+      service:
+        name: apache2
+        state: started
+
+    - name: Stop service
+      service:
+        name: apache2
+        state: stopped
+
+    - name: Restart service
+      service:
+        name: apache2
+        state: restarted

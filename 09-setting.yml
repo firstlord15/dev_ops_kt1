@@ -1,0 +1,15 @@
+---
+- name: Configure System Parameters
+  hosts: localhost
+  become: yes
+  tasks:
+    - name: Set sysctl parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: "{{ item.state | default('present') }}"
+      with_items:
+        - name: kernel.sysrq
+          value: 1
+        - name: net.ipv4.ip_forward
+          value: 1

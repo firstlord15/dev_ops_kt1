@@ -1,0 +1,22 @@
+---
+- name: GIT CLONE
+  hosts: GIT
+  become: yes
+  vars:
+    app_name: git
+    app_repo: https://github.com/nicothin/test-repo
+    app_dir: /home/sysadmin/git
+    app_env: production
+  tasks:
+    - name: Clone Git repository
+      git:
+        repo: "{{ app_repo }}"
+        dest: "{{ app_dir }}"
+        version: master
+      register: git_clone
+
+  handlers:
+    - name: restart application
+      systemd:
+        name: "{{ app_name }}"
+        state: restarted

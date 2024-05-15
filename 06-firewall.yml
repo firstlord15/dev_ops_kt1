@@ -1,0 +1,54 @@
+---
+- name: Configure firewall for webserver, MySQL, and Redis
+  hosts: webserver:mysql:redis
+  become: yes
+  vars:
+    http_port: 80
+    https_port: 443
+    mysql_port: 3306
+    redis_port: 6379
+    ansible_control_node_network: 172.29.69.0/24
+  tasks:
+    - name: Install firewalld
+      ansible.builtin.package:
+        name: firewalld
+        state: present
+    - name: Start and enable firewalld
+      ansible.builtin.systemd:
+        name: firewalld
+        state: started
+        enabled: yes
+    - name: Allow traffic from Ansible control node network
+      ansible.posix.firewalld:
+        source: "{{ ansible_control_node_network }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+    - name: Allow incoming HTTP and HTTPS traffic
+      ansible.posix.firewalld:
+        service: "{{ item }}"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      loop:
+        - http
+        - https
+      when: "'webserver' in group_names"
+    - name: Allow incoming MySQL traffic
+      ansible.posix.firewalld:
+        port: "{{ mysql_port }}/tcp"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      when: "'mysql' in group_names"
+    - name: Allow incoming Redis traffic
+      ansible.posix.firewalld:
+        port: "{{ redis_port }}/tcp"
+        zone: public
+        state: enabled
+        immediate: yes
+        permanent: yes
+      when: "'redis' in group_names"
